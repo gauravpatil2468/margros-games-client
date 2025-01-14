@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Box } from "@mui/material"; // Using MUI Box for layout styling
 import SelectionPage from "./components/selectionPage";
 import SpinWheel from "./components/spinWheel";
@@ -41,6 +41,9 @@ function App() {
       }}
     >
       <Routes>
+        {/* Redirect root to /home */}
+        <Route path="/" element={<Navigate to="/home" />} />
+
         {/* Selection Page Route */}
         <Route path="/home" element={<SelectionPage />} />
         
