@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material"; // Using MUI Box for layout styling
 import SelectionPage from "./components/selectionPage";
 import SpinWheel from "./components/spinWheel";
@@ -12,18 +12,18 @@ import backgroundImage from './assets/logo.jpg';
 
 function App() {
   // Use useLocation hook to access the current URL query parameters
-  const location = useLocation();
+  // const location = useLocation();
 
-  useEffect(() => {
-    // Extract the token from the query parameters
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
+  // useEffect(() => {
+  //   // Extract the token from the query parameters
+  //   const params = new URLSearchParams(location.search);
+  //   const token = params.get('token');
 
-    if (token) {
-      // Store the token in localStorage for later use
-      localStorage.setItem('token', token);
-    }
-  }, [location]); // Re-run this when the location changes (e.g., route changes)
+  //   if (token) {
+  //     // Store the token in localStorage for later use
+  //     localStorage.setItem('token', token);
+  //   }
+  // }, [location]); // Re-run this when the location changes (e.g., route changes)
 
   return (
     <Box
@@ -41,8 +41,7 @@ function App() {
       }}
     >
       <Routes>
-        {/* Redirect root to /home */}
-        <Route path="/" element={<Navigate to="/register" />} />
+      
 
         {/* Selection Page Route */}
         <Route path="/home" element={<SelectionPage />} />
@@ -51,7 +50,7 @@ function App() {
         <Route path="/spin-wheel" element={<SpinWheel />} />
         <Route path="/card-game" element={<CardGame />} />
         <Route path="/dice-game" element={<DiceGame />} />
-        <Route path="/register" element={<UserForm />} />
+        <Route path="/" element={<UserForm />} />
       </Routes>
     </Box>
   );

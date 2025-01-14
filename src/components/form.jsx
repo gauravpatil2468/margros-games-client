@@ -1,10 +1,23 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
-import * as Yup from "yup"; // Import Yup for validation
+import * as Yup from "yup";
+import { useNavigate } from "react-router-dom"; // For navigation
 
 const UserForm = () => {
   const [message, setMessage] = useState(""); // State for displaying response messages
+  const navigate = useNavigate(); // Initialize navigate
+
+  // Helper function to check if a date is today's date
+  const isToday = (dateString) => {
+    const today = new Date();
+    const inputDate = new Date(dateString);
+    return (
+      today.getFullYear() === inputDate.getFullYear() &&
+      today.getMonth() === inputDate.getMonth() &&
+      today.getDate() === inputDate.getDate()
+    );
+  };
 
   // Formik form initialization and validation schema
   const formik = useFormik({
@@ -22,41 +35,49 @@ const UserForm = () => {
         .required("Phone number is required"),
       email: Yup.string()
         .email("Invalid email format")
-        .notRequired(), // Email is no longer required
+        .notRequired(), // Email is optional
     }),
     onSubmit: async (values) => {
       setMessage(""); // Reset message on form submission
 
       try {
-        // Sending POST request to the API
-        const response = await fetch(`https://margros-games-server.onrender.com/api/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: values.name,
-            email: values.email,
-            phone: values.phone,
-          }),
-        });
+        const response = await fetch(
+          `https://margros-games-server.onrender.com/api/register`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: values.name,
+              email: values.email,
+              phone: values.phone,
+            }),
+          }
+        );
+
+        const data = await response.json();
 
         if (!response.ok) {
-          // Handle different status codes
-          if (response.status === 500) {
-            setMessage("Failed to send SMS. Check the number and try again.");
-          } else if (response.status === 400) {
-            const data = await response.json();
-            setMessage(data.message || "User already registered.");
-          } else {
-            setMessage("An unexpected error occurred. Please try again.");
-          }
+          setMessage(data.message || "An unexpected error occurred.");
         } else {
-          // Success: 200 response
-          setMessage("Check your SMS for the game link.");
+          const { token, latestPlayedTimestamp } = data;
+
+          // Store the token in localStorage
+          localStorage.setItem("userToken", token);
+
+          // Check if latestPlayedTimestamp exists and is today's date
+          if (latestPlayedTimestamp && isToday(latestPlayedTimestamp)) {
+            localStorage.setItem("playedGame", "true");
+          } else {
+            localStorage.setItem("playedGame", "false");
+          }
+
+          // Redirect to /home
+          navigate("/home");
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         setMessage("An error occurred while registering the user.");
       }
     },
@@ -77,10 +98,10 @@ const UserForm = () => {
         border: "4px solid #b59e87",
         minHeight: "auto",
         height: "auto",
-        width: "100%", // Full width of the parent container
-        maxWidth: "400px", // Maximum width of the form box
+        width: "100%",
+        maxWidth: "400px",
         "@media (max-width: 600px)": {
-          width: "90%", // Shrink to 90% width for smaller screens
+          width: "90%",
         },
       }}
     >
@@ -101,21 +122,21 @@ const UserForm = () => {
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
             InputProps={{
-              style: { color: "#F7E9C8" }, // Change text color to match the header
+              style: { color: "#F7E9C8" },
             }}
             InputLabelProps={{
-              style: { color: "#F7E9C8" }, // Change label color to match the header
+              style: { color: "#F7E9C8" },
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#F7E9C8", // Border color when idle
+                  borderColor: "#F7E9C8",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#F7E9C8", // Border color on hover
+                  borderColor: "#F7E9C8",
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#F7E9C8", // Border color when focused
+                  borderColor: "#F7E9C8",
                 },
               },
             }}
@@ -133,21 +154,21 @@ const UserForm = () => {
             error={formik.touched.phone && Boolean(formik.errors.phone)}
             helperText={formik.touched.phone && formik.errors.phone}
             InputProps={{
-              style: { color: "#F7E9C8" }, // Change text color to match the header
+              style: { color: "#F7E9C8" },
             }}
             InputLabelProps={{
-              style: { color: "#F7E9C8" }, // Change label color to match the header
+              style: { color: "#F7E9C8" },
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#F7E9C8", // Border color when idle
+                  borderColor: "#F7E9C8",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#F7E9C8", // Border color on hover
+                  borderColor: "#F7E9C8",
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#F7E9C8", // Border color when focused
+                  borderColor: "#F7E9C8",
                 },
               },
             }}
@@ -166,21 +187,21 @@ const UserForm = () => {
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
             InputProps={{
-              style: { color: "#F7E9C8" }, // Change text color to match the header
+              style: { color: "#F7E9C8" },
             }}
             InputLabelProps={{
-              style: { color: "#F7E9C8" }, // Change label color to match the header
+              style: { color: "#F7E9C8" },
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#F7E9C8", // Border color when idle
+                  borderColor: "#F7E9C8",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#F7E9C8", // Border color on hover
+                  borderColor: "#F7E9C8",
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#F7E9C8", // Border color when focused
+                  borderColor: "#F7E9C8",
                 },
               },
             }}
@@ -205,7 +226,6 @@ const UserForm = () => {
           Submit
         </Button>
 
-        {/* Display message below the submit button */}
         {message && (
           <Typography variant="body2" sx={{ color: "#e57373", marginTop: 2 }}>
             {message}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import Chart from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import FeedbackComponent from './feedback'; // Import FeedbackComponent
 
 const SpinWheelGame = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const SpinWheelGame = () => {
   const spinBtnRef = useRef(null);
   const [finalValue, setFinalValue] = useState("Click 'Play' to start");
   const [gamePlayed, setGamePlayed] = useState(false); // State to track if game has been played
+  const [showFeedback, setShowFeedback] = useState(false); // State to track if feedback should be shown
 
   const rotationValues = [
     { minDegree: 0, maxDegree: 30, value: "mojito" },
@@ -117,6 +119,7 @@ const SpinWheelGame = () => {
           : "Better luck next time!"; // If the segment is blank
         setFinalValue(message);
         spinBtnRef.current.disabled = false; // Enable the play button after spinning
+        setShowFeedback(true); // Show feedback section after spin result
         break;
       }
     }
@@ -167,7 +170,7 @@ const SpinWheelGame = () => {
         // Set gamePlayed to true and store in localStorage
         localStorage.setItem("playedGame", "true");
         setGamePlayed(true); // Update game state
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
         if (token) {
           fetch('https://margros-games-server.onrender.com/api/game-played', {
             method: 'POST',
@@ -210,12 +213,11 @@ const SpinWheelGame = () => {
         minHeight: "auto",
         height: "auto",
         width: "100%", // Full width of the parent container
-        maxWidth: "300px",
+        maxWidth: "300px", // Adjusted maxWidth for smaller size
+        marginLeft: "auto", // Added margin to prevent overflow
+        marginRight: "auto", // Added margin to prevent overflow
         "@media (max-width: 600px)": {
           width: "90%", // Shrink to 90% width for smaller screens
-        },
-        "@media (max-height: 500px)": {
-          height: "300px", // Set height to 200px if viewport height is less than 500px
         },
       }}
     >
@@ -230,8 +232,8 @@ const SpinWheelGame = () => {
           maxWidth: "400px",
           aspectRatio: "1 / 1",
           "@media (max-height: 500px)": {
-          height: "150px", // Set height to 200px if viewport height is less than 500px
-        },
+            height: "150px", // Set height to 200px if viewport height is less than 500px
+          },
         }}
       >
         <canvas
@@ -296,6 +298,9 @@ const SpinWheelGame = () => {
           Cancel
         </Button>
       </Box>
+
+      {/* Display feedback component after the game is played */}
+      {showFeedback && <FeedbackComponent />}
     </Box>
   );
 };

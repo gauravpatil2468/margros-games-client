@@ -8,25 +8,24 @@ import cardGameImage from "../assets/card-game.png";
 import diceGameImage from "../assets/dice-game.png";
 
 const SelectionPage = () => {
-  const [gamePlayed, setGamePlayed] = useState(false); 
-  const [isTokenValid, setIsTokenValid] = useState(false); // Track if token is present
+  const [gamePlayed, setGamePlayed] = useState(false);
+  const [isTokenValid, setIsTokenValid] = useState(false); // Track if userToken is present
 
-  // Check localStorage for token and game played status
+  // Check localStorage for userToken and game played status
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Retrieve token
+    const userToken = localStorage.getItem("userToken"); // Retrieve userToken
     const playedGame = localStorage.getItem("playedGame"); // Retrieve game played status
-    
-    if (token) {
-      setIsTokenValid(true); // Token is present, user is valid
-      if (playedGame) {
-        setGamePlayed(true); // If a game is played, update the state
-      }
+
+    // Check if userToken is present and if a game has been played
+    if (userToken) {
+      setIsTokenValid(true); // userToken is present, user is valid
+      setGamePlayed(playedGame === "true"); // If playedGame is "true", user has played
     } else {
-      setIsTokenValid(false); // If token is not present, invalidate the user
+      setIsTokenValid(false); // If userToken is not present, invalidate the user
     }
   }, []);
 
-  // If token is not present, display invalid user message
+  // If userToken is not present, display invalid user message
   if (!isTokenValid) {
     return (
       <Box
@@ -65,7 +64,21 @@ const SelectionPage = () => {
         backgroundColor: "rgba(60, 44, 60, 0.6)", // Outer container with more transparency
         borderRadius: "16px", // Rounded corners for the outer container
         boxShadow: 3, // Optional: Adds shadow for more contrast
-        border: "4px solid #b59e87", // Border for the outer container
+        border: "4px solid #b59e87",
+        height:"auto",
+        "@media (max-width: 400px)": {
+      width: "90%", // Set width to 90% for small screens
+      height: "auto", // Allow the height to adjust based on content
+      marginTop: "15vh", // Add extra space at the top
+      marginBottom: "15vh", // Add extra space at the bottom
+      padding: 1, // Reduce padding for smaller screens
+    },
+    "@media (max-width: 600px)": {
+      width: "90%", // Set width to 90% for smaller devices
+      height: "auto", // Automatically adjust height based on content
+      marginTop: "8vh", // Adjust margin for slightly larger small screens
+      marginBottom: "8vh", // Adjust margin for slightly larger small screens
+    }, // Border for the outer container
       }}
     >
       {/* Title */}
@@ -76,10 +89,13 @@ const SelectionPage = () => {
           textAlign: "center",
           color: "#F7E9C8", // Slightly different shade of #FDF8E2
           fontWeight: "bold", // Bold font style
-          fontSize: "2.5rem", // Larger font size
+          fontSize: "2.5rem",
+          "@media (max-width: 400px)": {
+     fontSize:"2rem" // Optional: Adjust padding for very small screens
+    }, // Larger font size
         }}
       >
-        Select a Game
+         "Select a Game"
       </Typography>
 
       {/* Cards Container */}
@@ -93,7 +109,13 @@ const SelectionPage = () => {
           flexWrap: "wrap",
           width: "100%",
           maxWidth: 800,
-          marginTop: 3, // Increased gap between the title and the cards container
+          marginTop: 3,
+          "@media (max-width: 400px)": {
+      width: "90%", // Set width to 100px for screens smaller than 400px
+      height: "auto", // Set height to 100px for screens smaller than 400px
+      margin: 0, // Optional: Adjust margin for very small screens
+      padding: 0, // Optional: Adjust padding for very small screens
+    }, // Increased gap between the title and the cards container
         }}
       >
         {/* Spin Wheel Card */}
@@ -108,7 +130,7 @@ const SelectionPage = () => {
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
           }}
           component={Link}
-          to="/spin-wheel"
+          to={gamePlayed ? "#" : "/spin-wheel"}
           style={{ textDecoration: "none" }}
         >
           <CardMedia
@@ -136,7 +158,7 @@ const SelectionPage = () => {
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
           }}
           component={Link}
-          to="/card-game"
+          to={gamePlayed ? "#" : "/card-game"}
           style={{ textDecoration: "none" }}
         >
           <CardMedia
@@ -164,7 +186,7 @@ const SelectionPage = () => {
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
           }}
           component={Link}
-          to="/dice-game"
+          to={gamePlayed ? "#" : "/dice-game"}
           style={{ textDecoration: "none" }}
         >
           <CardMedia
@@ -189,9 +211,14 @@ const SelectionPage = () => {
           marginTop: 2,
           color: "#FDF8E2",
           fontSize: "1.2rem",
+          "@media (max-width: 400px)": {
+     fontSize:"0.8rem" // Optional: Adjust padding for very small screens
+    }, 
         }}
       >
-        Choose any one game and get 1 chance to play.
+        {gamePlayed
+          ? "Please come back tomorrow to play again."
+          : "Choose any one game and get 1 chance to play."}
       </Typography>
     </Box>
   );

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Typography, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CasinoIcon from '@mui/icons-material/Casino'; // Import Casino icon
-import { useEffect } from "react";
+import FeedbackComponent from "./feedback";
 
 const DiceGame = () => {
   const navigate = useNavigate();
@@ -12,12 +12,12 @@ const DiceGame = () => {
   const [gamePlayed, setGamePlayed] = useState(false); 
 
   useEffect(() => {
-      // Check localStorage if the game has been played
-      const playedGame = localStorage.getItem("playedGame");
-      if (playedGame === "true") {
-        setGamePlayed(true); // Set state to true if game was played previously
-      }
-    },[])
+    // Check localStorage if the game has been played
+    const playedGame = localStorage.getItem("playedGame");
+    if (playedGame === "true") {
+      setGamePlayed(true); // Set state to true if game was played previously
+    }
+  },[]);
 
   const handleRoll = () => {
     setMessage("Rolling..."); // Show a rolling message while dice are rolling
@@ -52,28 +52,30 @@ const DiceGame = () => {
         setMessage("You rolled a 6! Better luck next time!");
       }
     }, 1000);
+
     localStorage.setItem("playedGame", "true");
     setGamePlayed(true);
-     // Simulate a delay to mimic dice rolling animation
-     const token = localStorage.getItem('token'); // Retrieve token from localStorage
-        if (token) {
-          fetch('https://margros-games-server.onrender.com/api/game-played', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token }), // Send the token in the request body
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log('Game played status updated:', data);
-            })
-            .catch((error) => {
-              console.error('Error updating game played status:', error);
-            });
-        } else {
-          console.log('No token found in localStorage');
-        }
+
+    // Simulate a delay to mimic dice rolling animation
+    const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
+    if (token) {
+      fetch('https://margros-games-server.onrender.com/api/game-played', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }), // Send the token in the request body
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Game played status updated:', data);
+        })
+        .catch((error) => {
+          console.error('Error updating game played status:', error);
+        });
+    } else {
+      console.log('No token found in localStorage');
+    }
   };
 
   const handleCancel = () => {
@@ -198,6 +200,9 @@ const DiceGame = () => {
           Cancel
         </Button>
       </Box>
+
+      {/* Display feedback component after the dice is rolled */}
+      {diceResult && <FeedbackComponent />}
     </Box>
   );
 };

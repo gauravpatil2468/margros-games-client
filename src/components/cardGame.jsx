@@ -3,6 +3,7 @@ import { Box, Button, Typography, useTheme } from "@mui/material";
 import { useSpring, animated } from "react-spring"; // Import react-spring for animation
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import { useEffect } from "react";
+import FeedbackComponent from "./feedback";
 
 
 const CardGame = () => {
@@ -40,7 +41,7 @@ const CardGame = () => {
     setMessage(randomOutcome); // Set the message
     localStorage.setItem("playedGame", "true");
     setGamePlayed(true);
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
+    const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
         if (token) {
           fetch('https://margros-games-server.onrender.com/api/game-played', {
             method: 'POST',
@@ -211,6 +212,7 @@ const CardGame = () => {
           Cancel
         </Button>
       </Box>
+      {flipped && <FeedbackComponent />}
     </Box>
   );
 };
