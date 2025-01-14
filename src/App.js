@@ -42,7 +42,7 @@ function App() {
     >
       <Routes>
         {/* Redirect root to /home */}
-        <Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/" element={<Navigate to="/register" />} />
 
         {/* Selection Page Route */}
         <Route path="/home" element={<SelectionPage />} />
