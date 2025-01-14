@@ -29,7 +29,7 @@ const UserForm = () => {
 
       try {
         // Sending POST request to the API
-        const response = await fetch(`http://localhost:3001/api/register`, {
+        const response = await fetch(`https://margros-games-server.onrender.com/api/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

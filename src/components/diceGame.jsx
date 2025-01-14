@@ -57,7 +57,7 @@ const DiceGame = () => {
      // Simulate a delay to mimic dice rolling animation
      const token = localStorage.getItem('token'); // Retrieve token from localStorage
         if (token) {
-          fetch('http://localhost:3001/api/game-played', {
+          fetch('https://margros-games-server.onrender.com/api/game-played', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
