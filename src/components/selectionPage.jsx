@@ -128,6 +128,11 @@ const SelectionPage = () => {
             borderRadius: 2,
             border: "2px solid #b59e87", // Border for each card
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
+            marginTop: 3,
+          "@media (max-width: 400px)": {
+      height:"190px",
+    },
+
           }}
           component={Link}
           to={gamePlayed ? "#" : "/spin-wheel"}
@@ -156,6 +161,9 @@ const SelectionPage = () => {
             borderRadius: 2,
             border: "2px solid #b59e87", // Border for each card
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
+            "@media (max-width: 400px)": {
+      height:"190px",
+    },
           }}
           component={Link}
           to={gamePlayed ? "#" : "/card-game"}
@@ -184,6 +192,9 @@ const SelectionPage = () => {
             borderRadius: 2,
             border: "2px solid #b59e87", // Border for each card
             "&:hover": !gamePlayed ? { transform: "scale(1.05)" } : {},
+            "@media (max-width: 400px)": {
+      height:"190px",
+    },
           }}
           component={Link}
           to={gamePlayed ? "#" : "/dice-game"}
