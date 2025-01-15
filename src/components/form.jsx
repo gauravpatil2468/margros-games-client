@@ -10,15 +10,23 @@ const UserForm = () => {
 
   // Helper function to check if a date is today's date
   const isToday = (dateString) => {
-  const today = new Date();
-  const inputDate = new Date(dateString);
+  const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
 
+  const todayUTC = new Date();
+  const inputUTC = new Date(dateString);
+
+  // Convert both dates to IST by adding the offset
+  const todayIST = new Date(todayUTC.getTime() + IST_OFFSET);
+  const inputIST = new Date(inputUTC.getTime() + IST_OFFSET);
+
+  // Compare IST components
   return (
-    today.getUTCFullYear() === inputDate.getUTCFullYear() &&
-    today.getUTCMonth() === inputDate.getUTCMonth() &&
-    today.getUTCDate() === inputDate.getUTCDate()
+    todayIST.getFullYear() === inputIST.getFullYear() &&
+    todayIST.getMonth() === inputIST.getMonth() &&
+    todayIST.getDate() === inputIST.getDate()
   );
 };
+
 
   // Formik form initialization and validation schema
   const formik = useFormik({
