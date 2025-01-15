@@ -10,14 +10,15 @@ const UserForm = () => {
 
   // Helper function to check if a date is today's date
   const isToday = (dateString) => {
-    const today = new Date();
-    const inputDate = new Date(dateString);
-    return (
-      today.getFullYear() === inputDate.getFullYear() &&
-      today.getMonth() === inputDate.getMonth() &&
-      today.getDate() === inputDate.getDate()
-    );
-  };
+  const today = new Date();
+  const inputDate = new Date(dateString);
+
+  return (
+    today.getUTCFullYear() === inputDate.getUTCFullYear() &&
+    today.getUTCMonth() === inputDate.getUTCMonth() &&
+    today.getUTCDate() === inputDate.getUTCDate()
+  );
+};
 
   // Formik form initialization and validation schema
   const formik = useFormik({
@@ -65,6 +66,8 @@ const UserForm = () => {
 
           // Store the token in localStorage
           localStorage.setItem("userToken", token);
+          console.log(latestPlayedTimestamp)
+          console.log(isToday(latestPlayedTimestamp))
 
           // Check if latestPlayedTimestamp exists and is today's date
           if (latestPlayedTimestamp && isToday(latestPlayedTimestamp)) {
