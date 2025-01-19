@@ -1,25 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Typography, useTheme } from "@mui/material";
 import { useSpring, animated } from "react-spring"; // Import react-spring for animation
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
-import { useEffect } from "react";
-import FeedbackComponent from "./feedback";
-
+import FeedbackComponent from "./feedback"; // Import the feedback component
 
 const CardGame = () => {
   const [flipped, setFlipped] = useState(false); // Track whether the card is flipped
   const [message, setMessage] = useState("");
   const [gamePlayed, setGamePlayed] = useState(false);
+  const [offers, setOffers] = useState([]);
+  const [winProbability, setWinProbability] = useState(0.3); // Default win probability
   const theme = useTheme();
   const navigate = useNavigate(); // Initialize the navigate function
 
   useEffect(() => {
-        // Check localStorage if the game has been played
-        const playedGame = localStorage.getItem("playedGame");
-        if (playedGame === "true") {
-          setGamePlayed(true); // Set state to true if game was played previously
-        }
-      },[])
+    // Get winProbability and offers from localStorage
+    const storedOffers = JSON.parse(localStorage.getItem("offers"));
+    const cardGameOffers = storedOffers?.card_game || [];
+    setOffers(cardGameOffers);
+
+    const storedWinProbability = parseFloat(localStorage.getItem("winProbability") || 0.3);
+    setWinProbability(storedWinProbability);
+
+    // Check localStorage if the game has been played
+    const playedGame = localStorage.getItem("playedGame");
+    if (playedGame === "true") {
+      setGamePlayed(true); // Set state to true if game was played previously
+    }
+  }, []);
 
   // Animation for the card flip
   const flipAnimation = useSpring({
@@ -31,38 +39,39 @@ const CardGame = () => {
   const handleFlip = () => {
     setFlipped(!flipped);
 
-    // 80% chance for "Better Luck Next Time" and 20% for one of the rolls
-    const randomOutcome = Math.random() < 0.8 
-      ? "Better Luck Next Time" 
-      : Math.random() < 0.5 
-        ? "Tawa Fried Chicken Roll" 
-        : "Paneer Tikka Roll"; // Randomly pick one of the rolls for the 20% chance
+    // Determine the result based on win probability
+    const randomOutcome = Math.random() < winProbability
+      ? offers[Math.floor(Math.random() * offers.length)] // Randomly select one of the offers
+      : "Better Luck Next Time"; // 70% chance for failure message
 
     setMessage(randomOutcome); // Set the message
     localStorage.setItem("playedGame", "true");
     setGamePlayed(true);
-    const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
-        if (token) {
-          fetch('https://margros-games-server.onrender.com/api/game-played', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token }), // Send the token in the request body
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log('Game played status updated:', data);
-            })
-            .catch((error) => {
-              console.error('Error updating game played status:', error);
-            });
-        } else {
-          console.log('No token found in localStorage');
-        }
+
+    // Send game played status to the server with the token and table name
+    const token = localStorage.getItem("userToken");
+    const tableName = localStorage.getItem("tableName"); // Get the tableName from localStorage
+    if (token && tableName) {
+      fetch('https://margros-games-server.onrender.com/api/game-played', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, tableName }), // Send the token and table name in the request body
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Game played status updated:', data);
+        })
+        .catch((error) => {
+          console.error('Error updating game played status:', error);
+        });
+    } else {
+      console.log('No token or table name found in localStorage');
+    }
   };
 
-  // Handle cancel button click to navigate to '/'
+  // Handle cancel button click to navigate to '/home'
   const handleCancel = () => {
     navigate("/home"); // Navigate to the root URL
   };
@@ -81,7 +90,6 @@ const CardGame = () => {
           padding: 2,
           margin: 1,
         },
-      
       }}
     >
       <Typography variant="h4" sx={{ color: "#F7E9C8" }}>
@@ -108,7 +116,7 @@ const CardGame = () => {
               fontSize: "1rem",
             }}
           >
-            Tawa Fried Chicken Roll, Paneer Tikka Roll!!
+            {offers.join(", ")}
           </Box>
         </Box>
       )}
@@ -126,8 +134,7 @@ const CardGame = () => {
             height: "300px",
             margin: "0 auto",
             transformStyle: "preserve-3d", // Maintain 3D perspective
-            transition: "transform 0.5s ease-in-out",
-             // Smooth transition
+            transition: "transform 0.5s ease-in-out", // Smooth transition
           }}
         >
           <Box
@@ -192,7 +199,7 @@ const CardGame = () => {
         >
           Flip
         </Button>
-        
+
         {/* Cancel Button */}
         <Button
           onClick={handleCancel}

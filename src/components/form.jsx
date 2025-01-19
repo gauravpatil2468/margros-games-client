@@ -2,31 +2,33 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom"; // For navigation
+import { useNavigate, useLocation } from "react-router-dom"; // For navigation and location
 
 const UserForm = () => {
   const [message, setMessage] = useState(""); // State for displaying response messages
   const navigate = useNavigate(); // Initialize navigate
+  const location = useLocation(); // Get location object from react-router
+  const searchParams = new URLSearchParams(location.search);
+  const restaurantName = searchParams.get("restaurantName"); // Extract restaurantName from query
 
   // Helper function to check if a date is today's date
   const isToday = (dateString) => {
-  const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+    const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
 
-  const todayUTC = new Date();
-  const inputUTC = new Date(dateString);
+    const todayUTC = new Date();
+    const inputUTC = new Date(dateString);
 
-  // Convert both dates to IST by adding the offset
-  const todayIST = new Date(todayUTC.getTime() + IST_OFFSET);
-  const inputIST = new Date(inputUTC.getTime() + IST_OFFSET);
+    // Convert both dates to IST by adding the offset
+    const todayIST = new Date(todayUTC.getTime() + IST_OFFSET);
+    const inputIST = new Date(inputUTC.getTime() + IST_OFFSET);
 
-  // Compare IST components
-  return (
-    todayIST.getFullYear() === inputIST.getFullYear() &&
-    todayIST.getMonth() === inputIST.getMonth() &&
-    todayIST.getDate() === inputIST.getDate()
-  );
-};
-
+    // Compare IST components
+    return (
+      todayIST.getFullYear() === inputIST.getFullYear() &&
+      todayIST.getMonth() === inputIST.getMonth() &&
+      todayIST.getDate() === inputIST.getDate()
+    );
+  };
 
   // Formik form initialization and validation schema
   const formik = useFormik({
@@ -51,7 +53,7 @@ const UserForm = () => {
 
       try {
         const response = await fetch(
-          `https://margros-games-server.onrender.com/api/register`,
+          `https://margros-games-server.onrender.com/api/register?restaurantName=${restaurantName}`, // Pass restaurantName in the query
           {
             method: "POST",
             headers: {
@@ -70,12 +72,14 @@ const UserForm = () => {
         if (!response.ok) {
           setMessage(data.message || "An unexpected error occurred.");
         } else {
-          const { token, latestPlayedTimestamp } = data;
+          const { token, latestPlayedTimestamp, offers, tableName, winProbability } = data;
 
-          // Store the token in localStorage
+          // Store the token and other response data in localStorage
           localStorage.setItem("userToken", token);
-          console.log(latestPlayedTimestamp)
-          console.log(isToday(latestPlayedTimestamp))
+          localStorage.setItem("latestPlayedTimestamp", latestPlayedTimestamp);
+          localStorage.setItem("offers", JSON.stringify(offers)); // Save as string
+          localStorage.setItem("tableName", tableName);
+          localStorage.setItem("winProbability", winProbability);
 
           // Check if latestPlayedTimestamp exists and is today's date
           if (latestPlayedTimestamp && isToday(latestPlayedTimestamp)) {

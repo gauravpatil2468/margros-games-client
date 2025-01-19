@@ -12,11 +12,18 @@ const FeedbackComponent = () => {
 
   // Handle submit
   const handleSubmit = () => {
-    // Get userToken from localStorage
+    // Get userToken and tableName from localStorage
     const userToken = localStorage.getItem("userToken");
+    const tableName = localStorage.getItem("tableName");
 
     if (!userToken) {
       alert("You must be logged in to submit feedback.");
+      return;
+    }
+
+    // Check if tableName exists
+    if (!tableName) {
+      alert("Table name is missing. Please try again.");
       return;
     }
 
@@ -24,6 +31,7 @@ const FeedbackComponent = () => {
     const requestData = {
       token: userToken,  // Use userToken instead of token
       rating: rating,    // Send the rating as an integer
+      tableName: tableName,  // Send the tableName
     };
 
     // Make the POST request to submit feedback

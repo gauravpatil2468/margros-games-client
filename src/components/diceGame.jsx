@@ -10,14 +10,29 @@ const DiceGame = () => {
   const [diceResult, setDiceResult] = useState(null);
   const [message, setMessage] = useState("Roll the dice and see your luck!");
   const [gamePlayed, setGamePlayed] = useState(false); 
+  const [offers, setOffers] = useState([]); // State to hold the dynamic offers
+  const [winProbability, setWinProbability] = useState(75); // State to hold the win probability
 
   useEffect(() => {
-    // Check localStorage if the game has been played
+    // Check if the game has been played before
     const playedGame = localStorage.getItem("playedGame");
     if (playedGame === "true") {
       setGamePlayed(true); // Set state to true if game was played previously
     }
-  },[]);
+
+    // Fetch dynamic offers from localStorage (assuming offers for dice_game)
+    const gameOffers = JSON.parse(localStorage.getItem("offers"));
+    if (gameOffers && gameOffers.dice_game) {
+      setOffers(gameOffers.dice_game); // Assuming offers for dice_game exist
+    }
+
+    // Fetch win probability from localStorage
+    const savedProbability = localStorage.getItem("winProbability");
+    if (savedProbability) {
+      setWinProbability(parseFloat(savedProbability)); // Update win probability
+    }
+
+  }, []);
 
   const handleRoll = () => {
     setMessage("Rolling..."); // Show a rolling message while dice are rolling
@@ -25,38 +40,38 @@ const DiceGame = () => {
       const randomChance = Math.random() * 100; // Random chance between 0 and 100
       let result;
 
-      // 75% chance to get 2, 4, or 6
-      if (randomChance <= 75) {
-        // Randomly pick between 2, 4, or 6
-        const possibleResults = [2, 4, 6];
+      // Apply the win probability dynamically
+      if (randomChance <= winProbability) {
+        // Randomly pick between 1, 3, or 5 (win)
+        const possibleResults = [1, 3, 5];
         result = possibleResults[Math.floor(Math.random() * possibleResults.length)];
       } else {
-        // 25% chance to get any number from 1 to 6
-        result = Math.floor(Math.random() * 6) + 1;
+        // Randomly pick between 2, 4, or 6 (lose)
+        const possibleResults = [2, 4, 6];
+        result = possibleResults[Math.floor(Math.random() * possibleResults.length)];
       }
 
       setDiceResult(result);
 
       // Custom messages based on the dice result
       if (result === 1) {
-        setMessage("You rolled a 1! Congratulations, you get 5% off!");
-      } else if (result === 2) {
-        setMessage("You rolled a 2! Better luck next time!");
+        setMessage("You rolled a 1! Congratulations, you win: " + offers[0]);
       } else if (result === 3) {
-        setMessage("You rolled a 3! Congratulations, you get 10% off!");
-      } else if (result === 4) {
-        setMessage("You rolled a 4! Better luck next time!");
+        setMessage("You rolled a 3! Congratulations, you win: " + offers[1]);
       } else if (result === 5) {
-        setMessage("You rolled a 5! Congratulations, you get 15% off!");
-      } else if (result === 6) {
-        setMessage("You rolled a 6! Better luck next time!");
+        setMessage("You rolled a 5! Congratulations, you win: " + offers[2]);
+      } else {
+        setMessage("You rolled a " + result + "! Better luck next time.");
       }
     }, 1000);
 
     localStorage.setItem("playedGame", "true");
     setGamePlayed(true);
 
-    // Simulate a delay to mimic dice rolling animation
+    // Directly get tableName from localStorage
+    const tableName = localStorage.getItem("tableName"); // Get tableName from localStorage
+
+    // Send data to the server with tableName
     const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
     if (token) {
       fetch('https://margros-games-server.onrender.com/api/game-played', {
@@ -64,7 +79,10 @@ const DiceGame = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token }), // Send the token in the request body
+        body: JSON.stringify({ 
+          token, 
+          tableName // Use tableName from localStorage directly
+        }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -154,11 +172,11 @@ const DiceGame = () => {
         },
          }}>Prizes:</Typography>
         <ul>
-          <li>1: 5% off</li>
+          <li>1: {offers[0] || "Unknown Offer"}</li>
+          <li>3: {offers[1] || "Unknown Offer"}</li>
+          <li>5: {offers[2] || "Unknown Offer"}</li>
           <li>2: Better luck next time</li>
-          <li>3: 10% off</li>
           <li>4: Better luck next time</li>
-          <li>5: 15% off</li>
           <li>6: Better luck next time</li>
         </ul>
       </Box>

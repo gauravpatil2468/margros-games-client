@@ -10,20 +10,45 @@ const SpinWheelGame = () => {
   const wheelRef = useRef(null);
   const spinBtnRef = useRef(null);
   const [finalValue, setFinalValue] = useState("Click 'Play' to start");
-  const [gamePlayed, setGamePlayed] = useState(false); // State to track if game has been played
-  const [showFeedback, setShowFeedback] = useState(false); // State to track if feedback should be shown
+  const [gamePlayed, setGamePlayed] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  const rotationValues = [
-    { minDegree: 0, maxDegree: 30, value: "mojito" },
-    { minDegree: 31, maxDegree: 90, value: "" },
-    { minDegree: 91, maxDegree: 150, value: "gulab jamun" },
-    { minDegree: 151, maxDegree: 210, value: "5% off next visit" },
-    { minDegree: 211, maxDegree: 270, value: "samosa chutney" },
-    { minDegree: 271, maxDegree: 330, value: "" },
-    { minDegree: 331, maxDegree: 360, value: "mojito" },
-  ];
+  const tableName = localStorage.getItem("tableName"); // Defined here
+    const winProbability = parseFloat(localStorage.getItem("winProbability") || 0.3);
+
+  const rotationValues = useMemo(() => {
+    const storedOffers = JSON.parse(localStorage.getItem("offers"));
+    const spinWheelOffers = storedOffers?.spin_wheel || [];
+    
+     // Defined here
+    
+    return [
+      { minDegree: 0, maxDegree: 30, value: spinWheelOffers[0] || "" },
+      { minDegree: 31, maxDegree: 90, value: "" },
+      { minDegree: 91, maxDegree: 150, value: spinWheelOffers[1] || "" },
+      { minDegree: 151, maxDegree: 210, value: spinWheelOffers[2] || "" },
+      { minDegree: 211, maxDegree: 270, value: spinWheelOffers[3] || "" },
+      { minDegree: 271, maxDegree: 330, value: "" },
+      { minDegree: 331, maxDegree: 360, value: spinWheelOffers[0] || "" },
+    ];
+  }, []);
+
+  const labels = useMemo(() => {
+    const storedOffers = JSON.parse(localStorage.getItem("offers"));
+    const spinWheelOffers = storedOffers?.spin_wheel || [];
+
+    return [
+      "",
+      spinWheelOffers[0] || "",
+      "",
+      spinWheelOffers[1] || "",
+      spinWheelOffers[2] || "",
+      spinWheelOffers[3] || "",
+    ];
+  }, []);
 
   const data = useMemo(() => [16, 16, 16, 16, 16, 16], []);
+  
   const pieColors = useMemo(
     () => [
       "rgba(64, 25, 20, 0.95)",
@@ -39,24 +64,16 @@ const SpinWheelGame = () => {
   const chartRef = useRef(null);
 
   useEffect(() => {
-    // Check localStorage if the game has been played
     const playedGame = localStorage.getItem("playedGame");
     if (playedGame === "true") {
-      setGamePlayed(true); // Set state to true if game was played previously
+      setGamePlayed(true);
     }
 
     const chartInstance = new Chart(wheelRef.current, {
       plugins: [ChartDataLabels],
       type: "pie",
       data: {
-        labels: [
-          "",
-          "mojito",
-          "",
-          "samosa chutney",
-          "5% off next visit",
-          "gulab jamun",
-        ],
+        labels: labels,
         datasets: [
           {
             backgroundColor: pieColors,
@@ -78,12 +95,12 @@ const SpinWheelGame = () => {
             formatter: (value, context) => {
               const label = context.chart.data.labels[context.dataIndex];
               if (label) {
-                return label.split(" ").join("\n"); // Insert line breaks between words
+                return label.split(" ").join("\n");
               }
-              return "Better luck\nnext time!"; // Handle blank segments
+              return "Better luck\nnext time!";
             },
             font: {
-              size: 10, // Reduced font size even further for labels to avoid overflow on small screens
+              size: 10,
             },
             align: "center",
           },
@@ -95,7 +112,7 @@ const SpinWheelGame = () => {
     return () => {
       chartInstance.destroy();
     };
-  }, [data, pieColors]);
+  }, [data, pieColors, labels]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -115,11 +132,11 @@ const SpinWheelGame = () => {
     for (let i of rotationValues) {
       if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
         const message = i.value
-          ? `You won ${i.value}!` // If the segment has a value
-          : "Better luck next time!"; // If the segment is blank
+          ? `You won ${i.value}!`
+          : "Better luck next time!";
         setFinalValue(message);
-        spinBtnRef.current.disabled = false; // Enable the play button after spinning
-        setShowFeedback(true); // Show feedback section after spin result
+        spinBtnRef.current.disabled = false;
+        setShowFeedback(true);
         break;
       }
     }
@@ -129,55 +146,50 @@ const SpinWheelGame = () => {
   let resultValue = 101;
 
   const handleSpin = () => {
-    spinBtnRef.current.disabled = true; // Disable play button during spin
-    setFinalValue("Good Luck!"); // Show message during spin
+    spinBtnRef.current.disabled = true;
+    setFinalValue("Good Luck!");
 
     let randomDegree;
 
-    // 70% chance to land in blank segments (31–90 or 271–330)
+    // Use dynamic winProbability to calculate chances
+   // Define winProbability here
     const randomChance = Math.random();
-    if (randomChance < 0.75) {
+    if (randomChance < winProbability) {
+      do {
+        randomDegree = Math.floor(Math.random() * 355);
+      } while (
+        (randomDegree >= 31 && randomDegree <= 90) ||
+        (randomDegree >= 271 && randomDegree <= 330)
+      );
+    } else {
       const range1 = Math.floor(Math.random() * (90 - 31 + 1)) + 31;
       const range2 = Math.floor(Math.random() * (330 - 271 + 1)) + 271;
       randomDegree = Math.random() < 0.5 ? range1 : range2;
-    } else {
-      // 30% chance to land outside the blank segments (0–30, 150–270, 330–360)
-      do {
-        randomDegree = Math.floor(Math.random() * 355); // Random value between 0 and 366 (inclusive)
-      } while (
-        (randomDegree >= 31 && randomDegree <= 90) ||  // Exclude range 31-90
-        (randomDegree >= 271 && randomDegree <= 330)   // Exclude range 271-330
-      );
     }
 
-    // Spin the wheel with an interval to create smooth spinning animation
     const rotationInterval = setInterval(() => {
-      chartRef.current.options.rotation += resultValue; // Update the wheel's rotation angle
+      chartRef.current.options.rotation += resultValue;
       chartRef.current.update();
 
       if (chartRef.current.options.rotation >= 360) {
         count += 1;
-        resultValue -= 5; // Gradually reduce the speed to slow the wheel
-        chartRef.current.options.rotation = 0; // Reset rotation to prevent overflow
-      }
-
-      // Once wheel rotation gets close to the target, stop and show result
-      else if (count > 15 && chartRef.current.options.rotation === randomDegree) {
-        valueGenerator(randomDegree); // Update value when the wheel stops at the correct segment
-        clearInterval(rotationInterval); // Stop the wheel rotation
-        count = 0; // Reset count for next spin
-        resultValue = 101; // Reset speed value
-        // Set gamePlayed to true and store in localStorage
+        resultValue -= 5;
+        chartRef.current.options.rotation = 0;
+      } else if (count > 15 && chartRef.current.options.rotation === randomDegree) {
+        valueGenerator(randomDegree);
+        clearInterval(rotationInterval);
+        count = 0;
+        resultValue = 101;
         localStorage.setItem("playedGame", "true");
-        setGamePlayed(true); // Update game state
-        const token = localStorage.getItem('userToken'); // Retrieve token from localStorage
+        setGamePlayed(true);
+        const token = localStorage.getItem('userToken');
         if (token) {
           fetch('https://margros-games-server.onrender.com/api/game-played', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ token }), // Send the token in the request body
+            body: JSON.stringify({ token, tableName }),
           })
             .then((response) => response.json())
             .then((data) => {
@@ -190,11 +202,11 @@ const SpinWheelGame = () => {
           console.log('No token found in localStorage');
         }
       }
-    }, 10); // Interval speed for smoother animation
+    }, 10);
   };
 
   const handleCancel = () => {
-    navigate("/home"); // Redirect to the home page
+    navigate("/home");
   };
 
   return (
@@ -212,12 +224,12 @@ const SpinWheelGame = () => {
         border: "4px solid #b59e87",
         minHeight: "auto",
         height: "auto",
-        width: "100%", // Full width of the parent container
-        maxWidth: "300px", // Adjusted maxWidth for smaller size
-        marginLeft: "auto", // Added margin to prevent overflow
-        marginRight: "auto", // Added margin to prevent overflow
+        width: "100%",
+        maxWidth: "300px",
+        marginLeft: "auto",
+        marginRight: "auto",
         "@media (max-width: 600px)": {
-          width: "90%", // Shrink to 90% width for smaller screens
+          width: "90%",
         },
       }}
     >
@@ -232,7 +244,7 @@ const SpinWheelGame = () => {
           maxWidth: "400px",
           aspectRatio: "1 / 1",
           "@media (max-height: 500px)": {
-            height: "150px", // Set height to 200px if viewport height is less than 500px
+            height: "150px",
           },
         }}
       >
@@ -277,7 +289,7 @@ const SpinWheelGame = () => {
               color: "#000000",
             },
           }}
-          disabled={gamePlayed} // Disable if game has already been played
+          disabled={gamePlayed}
         >
           Play
         </Button>
@@ -299,10 +311,9 @@ const SpinWheelGame = () => {
         </Button>
       </Box>
 
-      {/* Display feedback component after the game is played */}
       {showFeedback && <FeedbackComponent />}
     </Box>
   );
 };
 
-export default SpinWheelGame;
+export default SpinWheelGame
